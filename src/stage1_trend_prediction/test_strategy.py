@@ -9,6 +9,9 @@ from utils import *
 import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
 from fire import Fire
+
+from src.setting.config import *
+
 plt.rcParams['font.sans-serif'] = ['SimHei']
 plt.rcParams['axes.unicode_minus'] = False 
 plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']
@@ -17,7 +20,8 @@ plt.rcParams['font.sans-serif'] = ['SimHei']
 plt.rcParams['axes.unicode_minus'] = False
 
 
-path = os.getcwd()
+# path = os.getcwd()
+path = '/home/guozq/source/data/alphafin'
 folder_path = path+'/db_file/'
 file_path = f'sqlite:////{folder_path}'
 
@@ -40,7 +44,10 @@ def get_指标(rr, port):
     dd_index.index = pd.to_datetime(dd_index['trade_date'])
     dd_index = dd_index.sort_index()
     dd_index = dd_index['close']
-    dd_index = dd_index.resample('M').last().pct_change()
+    # modify by guozq, 20250212
+    # change to newer version
+    # dd_index = dd_index.resample('M').last().pct_change()
+    dd_index = dd_index.resample('ME').last().pct_change()
     dd_index = dd_index[port.index[0]:port.index[-1]]
     基准总收益 = dd_index.sum()
     基准年化收益 = 基准总收益 / 时间跨度
@@ -74,7 +81,7 @@ def 获取指数(df_ports):
 
     df_指数 = pd.concat([df_上证指数, df_沪深300, df_上证50, df_创业], axis=1)
     df_指数.columns = ['SCI', 'CSI300', 'SSE50', 'CNX']
-    df_指数 = df_指数.resample('M').last().pct_change()
+    df_指数 = df_指数.resample('ME').last().pct_change()
     df_指数 = df_指数[df_ports.index[0]:df_ports.index[-1]]
 
     return df_指数
@@ -155,7 +162,9 @@ def main(tushare_token, stockgpt_mldl_path, save_dir, file_name):
     for k,v in change_stock_name.items():
         dd_stock["name"] = dd_stock["name"].replace([k], v)
     new_row = pd.Series(["000961.SZ", "000961", "中南建设", None, None, None, None, None, None, None], index=dd_stock.columns)
-    dd_stock = dd_stock.append(new_row.to_frame().T)
+    # dd_stock = dd_stock.append(new_row.to_frame().T)
+    # 使用 pd.concat 替代 append, update to newer version
+    dd_stock = pd.concat([dd_stock, new_row.to_frame().T], ignore_index=True)
 
     name_code_dict = dict(zip(dd_stock['name'], dd_stock['ts_code']))
     code_name_dict = dict(zip(dd_stock['ts_code'], dd_stock['name']))
@@ -181,11 +190,23 @@ def main(tushare_token, stockgpt_mldl_path, save_dir, file_name):
         ddx = dd[['stock_name', 'next_month', field_name]].drop_duplicates(subset=['stock_name', 'next_month'],
                                                                         keep='first')  # 取第一个
         ddx = ddx.pivot(index='next_month', columns='stock_name', values=field_name).fillna(0)
-        MV = MV.resample('M').last()
-        MV = MV[ddx.columns]
+        MV = MV.resample('ME').last()
+
+        # -------------------------------------
+        # modify by guozq, 20250212
+        # 估计是从Hugingface下载的sqllite表文件比较老，某些股票名字已经变更
+        # MV = MV[ddx.columns]
+
+        # 获取 MV 和 ddx 共同的列
+        common_columns = MV.columns.intersection(ddx.columns)
+        # 通过共同列过滤 MV
+        MV = MV[common_columns]
+        ddx = ddx[common_columns]
+        # -------------------------------------
+
         MV = MV[MV.index.isin(ddx.index)]
 
-        dd_ret = df_close.resample('M').last().pct_change()
+        dd_ret = df_close.resample('ME').last().pct_change()
         dd_ret = dd_ret[ddx.columns]
         dd_ret = dd_ret[dd_ret.index.isin(ddx.index)]
 
@@ -236,7 +257,11 @@ def main(tushare_token, stockgpt_mldl_path, save_dir, file_name):
 
 
     fig, ax = plt.subplots(figsize=(10, 4))
-    cmap = get_cmap('tab10')
+    # modify by guozq, 2025012
+    # change to newer version
+    # cmap = get_cmap('tab10')
+    cmap = plt.get_cmap('tab10')
+    # pyplot.get_cmap('tab10')
     line_styles = ['-', '--', '-.', ':']
 
 
@@ -289,4 +314,11 @@ def main(tushare_token, stockgpt_mldl_path, save_dir, file_name):
     print('-----finish-----\n\n')
 
 if __name__ == '__main__':
-    Fire(main)
+    # Fire(main)
+
+    main(tushare_token=tushare_token,
+         stockgpt_mldl_path=os.path.join(output_path, stockgpt_mldl_pred_xlsx),
+         save_dir=os.path.join(output_path, final_name),
+         file_name=final_name
+         )
+

@@ -9,6 +9,8 @@ from fire import Fire
 
 from transformers import AutoModel, AutoTokenizer
 
+from src.setting.config import *
+
 
 class myFAISS(FAISS):
     @classmethod
@@ -154,15 +156,17 @@ def main(base_model_path="", lora_ckpt_path="", embedding_model_path=""):
 
     faiss_config = {
         "news": {
-            "INDEX_PATH": "data/database_sample/news",
+            # "INDEX_PATH": "../../../data/database_sample/news",
+            "INDEX_PATH": "/home/guozq/source/github/AlphaFin/src/data/database_sample/news",
+
             "INDEX_NAME": "news_index"
         },
         "reports": {
-            "INDEX_PATH": "data/database_sample/reports",
+            "INDEX_PATH": "home/guozq/source/github/AlphaFin/src/data/database_sample/reports",
             "INDEX_NAME": "reports_index"
         },
         "prices": {
-            "INDEX_PATH": "data/database_sample/prices",
+            "INDEX_PATH": "home/guozq/source/github/AlphaFin/src/data/database_sample/prices",
             "INDEX_NAME": "prices_index"
         }
     }
@@ -203,7 +207,8 @@ def main(base_model_path="", lora_ckpt_path="", embedding_model_path=""):
                 knowledge_box = gr.Textbox(label='检索到的知识', value='暂无', interactive=False, lines=29)
             with gr.Column():
                 chatbot = gr.Chatbot()
-                chatbot.style(height=805)
+                # chatbot.style(height=805)
+                chatbot.height = 885
         msg = gr.Textbox(label='请输入你的问题')
         clear = gr.Button("Clear")
 
@@ -213,4 +218,8 @@ def main(base_model_path="", lora_ckpt_path="", embedding_model_path=""):
     demo.launch()
 
 if __name__ == '__main__':
-    Fire(main)
+    # Fire(main)
+    main(base_model_path=chatglm_path,
+         lora_ckpt_path=stockgpt2_path,
+         embedding_model_path=embedding_path
+         )

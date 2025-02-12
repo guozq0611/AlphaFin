@@ -4,8 +4,8 @@ cd src
 
 tushare_token="376beb3a08a44b4d583a87193cddb664016307bbc505f1775e6adbac"
 
-chatglm_path="/Users/Jason/.AlphaFin/model/chatglm2_6b"
-stockgpt1_path="/Users/Jason/.AlphaFin/model/stockgpt_stage1_lora"
+chatglm_path="/home/guozq/source/data/alphafin/model/chatglm2_6b"
+stockgpt1_path="/home/guozq/source/data/alphafin/model/stockgpt_stage1_lora"
 
 testdata_path="data/stage1_testdata.json"
 output_path="../outputs"
@@ -19,23 +19,27 @@ final_name="strategy_result"
 mkdir -p db_file
 huggingface-cli download --resume-download --local-dir-use-symlinks False AlphaFin/stage1_db_file --local-dir ./db_file --repo-type dataset
 
+#--------------------------------------
+# 20250112. guozq
+# 在RTX 4060 上跑了4个小时
+#--------------------------------------
 # 2. Inference: stock trend prediction
-python stage1_trend_prediction/stockgpt_inf.py \
-    --model_name_or_path ${chatglm_path} \
-    --lora_name_or_path ${stockgpt1_path} \
-    --data_path ${testdata_path} \
-    --output_path ${output_path}/${stockgpt_pred_jsonl}
-#
+#python stage1_trend_prediction/stockgpt_inf.py \
+#    --model_name_or_path ${chatglm_path} \
+#    --lora_name_or_path ${stockgpt1_path} \
+#    --data_path ${testdata_path} \
+#    --output_path ${output_path}/${stockgpt_pred_jsonl}
+
 ## 3. PostProcess: handle invalid values
 #python stage1_trend_prediction/dataprocess_stockgpt.py \
 #    --stockgpt_pred_path ${output_path}/${stockgpt_pred_jsonl} \
 #    --mldl_pred_path ${output_path}/${mldl_pred_xlsx} \
 #    --save_path ${output_path}/${stockgpt_mldl_pred_xlsx}
-#
-## 4. Execute: strategy simulation
-#python stage1_trend_prediction/test_strategy.py \
-#    --tushare_token ${tushare_token} \
-#    --stockgpt_mldl_path ${output_path}/${stockgpt_mldl_pred_xlsx} \
-#    --save_dir ${output_path}/${final_name} \
-#    --file_name ${final_name} \
-#    |& tee ${output_path}/strategy_test.log
+
+# 4. Execute: strategy simulation
+python stage1_trend_prediction/test_strategy.py \
+    --tushare_token ${tushare_token} \
+    --stockgpt_mldl_path ${output_path}/${stockgpt_mldl_pred_xlsx} \
+    --save_dir ${output_path}/${final_name} \
+    --file_name ${final_name} \
+    |& tee ${output_path}/strategy_test.log

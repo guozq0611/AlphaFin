@@ -87,21 +87,21 @@ def prompt_eval(args, model, tokenizer, data):
 
 
 def main():
-    # args = parse_args()
+    args = parse_args()
 
-    args = argparse.Namespace(
-        model_name_or_path='/Users/Jason/.AlphaFin/model/chatglm2_6b',
-        lora_name_or_path='/Users/Jason/.AlphaFin/model/stockgpt_stage1_lora',
-        data_path='../data/stage1_testdata.json',
-        output_path='../../outputs/stockgpt_prediction.jsonl'
-    )
+    # args = argparse.Namespace(
+    #     model_name_or_path='/Users/Jason/.AlphaFin/model/chatglm2_6b',
+    #     lora_name_or_path='/Users/Jason/.AlphaFin/model/stockgpt_stage1_lora',
+    #     data_path='../data/stage1_testdata.json',
+    #     output_path='../../outputs/stockgpt_prediction.jsonl'
+    # )
 
     tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, trust_remote_code=True)
     model = AutoModelForCausalLM.from_pretrained(args.model_name_or_path, trust_remote_code=True)
     if args.lora_name_or_path and os.path.exists(args.lora_name_or_path):
         model = PeftModel.from_pretrained(model, args.lora_name_or_path)
-    # device = torch.device('cuda:0')
-    device = torch.device('cpu')
+    device = torch.device('cuda:0')
+
 
     model.to(device)
     

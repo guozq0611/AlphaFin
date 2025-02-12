@@ -2,7 +2,7 @@ statsmodels
 gradio==3.45.0
 tushare
 langchain==0.0.323
-peft
+peft==0.4.0
 scipy==1.10.1
 oss2
 annlite
@@ -12,3 +12,4 @@ torch==2.0.0
 sentence-transformers
 faiss-cpu
 firep
+langchain-community
