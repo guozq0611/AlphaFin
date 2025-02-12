@@ -2,10 +2,10 @@ export HF_ENDPOINT=https://hf-mirror.com
 
 cd src
 
-tushare_token="your_tushare_token"
+tushare_token="376beb3a08a44b4d583a87193cddb664016307bbc505f1775e6adbac"
 
-chatglm_path="/path/to/chatglm2_6b"
-stockgpt1_path="/path/to/stockgpt_stage1_lora"
+chatglm_path="/Users/Jason/.AlphaFin/model/chatglm2_6b"
+stockgpt1_path="/Users/Jason/.AlphaFin/model/stockgpt_stage1_lora"
 
 testdata_path="data/stage1_testdata.json"
 output_path="../outputs"
@@ -25,17 +25,17 @@ python stage1_trend_prediction/stockgpt_inf.py \
     --lora_name_or_path ${stockgpt1_path} \
     --data_path ${testdata_path} \
     --output_path ${output_path}/${stockgpt_pred_jsonl}
-
-# 3. PostProcess: handle invalid values
-python stage1_trend_prediction/dataprocess_stockgpt.py \
-    --stockgpt_pred_path ${output_path}/${stockgpt_pred_jsonl} \
-    --mldl_pred_path ${output_path}/${mldl_pred_xlsx} \
-    --save_path ${output_path}/${stockgpt_mldl_pred_xlsx}
-
-# 4. Execute: strategy simulation
-python stage1_trend_prediction/test_strategy.py \
-    --tushare_token ${tushare_token} \
-    --stockgpt_mldl_path ${output_path}/${stockgpt_mldl_pred_xlsx} \
-    --save_dir ${output_path}/${final_name} \
-    --file_name ${final_name} \
-    |& tee ${output_path}/strategy_test.log
+#
+## 3. PostProcess: handle invalid values
+#python stage1_trend_prediction/dataprocess_stockgpt.py \
+#    --stockgpt_pred_path ${output_path}/${stockgpt_pred_jsonl} \
+#    --mldl_pred_path ${output_path}/${mldl_pred_xlsx} \
+#    --save_path ${output_path}/${stockgpt_mldl_pred_xlsx}
+#
+## 4. Execute: strategy simulation
+#python stage1_trend_prediction/test_strategy.py \
+#    --tushare_token ${tushare_token} \
+#    --stockgpt_mldl_path ${output_path}/${stockgpt_mldl_pred_xlsx} \
+#    --save_dir ${output_path}/${final_name} \
+#    --file_name ${final_name} \
+#    |& tee ${output_path}/strategy_test.log
